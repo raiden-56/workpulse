@@ -1,0 +1,45 @@
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# --- Node / web / electron ---
+node_modules/
+dist/
+dist-electron/
+release/
+coverage/
+*.tsbuildinfo
+.vite/
+.eslintcache
+
+# --- Java / Maven ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+hs_err_pid*
+
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# --- Env / secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+secrets/
+
+# --- Local data / logs ---
+infra/data/
+*.db
+*.sqlite
+*.log

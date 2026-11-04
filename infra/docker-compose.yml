@@ -1,0 +1,122 @@
+name: workpulse
+
+# Local development stack.
+#   docker compose up -d                     -> infrastructure only (postgres, redis, rabbitmq)
+#   docker compose --profile app up -d --build -> infrastructure + backend + web portal
+#
+# Copy .env.example to .env and adjust secrets before starting.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: workpulse-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-workpulse}
+      POSTGRES_USER: ${POSTGRES_USER:-workpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-workpulse_dev_password}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      # Host port defaults to 55432 so neither a locally installed PostgreSQL (5432) nor other
+      # projects' database containers collide with it.
+      - "${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-workpulse} -d ${POSTGRES_DB:-workpulse}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    container_name: workpulse-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-workpulse_dev_redis}"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD:-workpulse_dev_redis} ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: workpulse-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-workpulse}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-workpulse_dev_rabbit}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  backend:
+    profiles: ["app"]
+    build:
+      context: ../workpulse-backend
+      dockerfile: Dockerfile
+    container_name: workpulse-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      WORKPULSE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-workpulse}
+      WORKPULSE_DB_USERNAME: ${POSTGRES_USER:-workpulse}
+      WORKPULSE_DB_PASSWORD: ${POSTGRES_PASSWORD:-workpulse_dev_password}
+      WORKPULSE_REDIS_HOST: redis
+      WORKPULSE_REDIS_PASSWORD: ${REDIS_PASSWORD:-workpulse_dev_redis}
+      WORKPULSE_RABBITMQ_HOST: rabbitmq
+      WORKPULSE_RABBITMQ_USERNAME: ${RABBITMQ_USER:-workpulse}
+      WORKPULSE_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-workpulse_dev_rabbit}
+      WORKPULSE_JWT_SECRET: ${JWT_SECRET:-change-me-in-production-this-must-be-at-least-32-bytes-long}
+      WORKPULSE_CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+      WORKPULSE_DEMO_ENABLED: ${DEMO_ENABLED:-true}
+      WORKPULSE_BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@workpulse.local}
+      WORKPULSE_BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-ChangeMe!2026}
+    ports:
+      - "${BACKEND_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ../workpulse-web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api/v1
+    container_name: workpulse-web
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:

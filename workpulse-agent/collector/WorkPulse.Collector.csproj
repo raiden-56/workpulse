@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- WinExe: no console window. The visible, employee-facing UI is the Electron app; this process only samples. -->
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>WorkPulse.Collector</RootNamespace>
+    <AssemblyName>WorkPulse.Collector</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>WorkPulse</Authors>
+    <Product>WorkPulse Agent Collector</Product>
+    <Description>WorkPulse desktop agent – user-session activity collector (foreground application, idle, session state, aggregate input counts)</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\shared\cs\IpcMessages.cs" Link="Shared\IpcMessages.cs" />
+  </ItemGroup>
+
+</Project>

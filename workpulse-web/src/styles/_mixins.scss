@@ -1,0 +1,27 @@
+@mixin tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin focus-ring {
+  outline: 2px solid var(--wp-primary);
+  outline-offset: 2px;
+}
+
+@mixin card {
+  background: var(--wp-surface);
+  border: 1px solid var(--wp-border);
+  border-radius: var(--wp-radius-card);
+}
+
+@mixin respond-below($px) {
+  @media (max-width: #{$px - 1}px) {
+    @content;
+  }
+}

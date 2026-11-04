@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "vscjava.vscode-java-pack",
+    "ms-dotnettools.csdevkit",
+    "ms-azuretools.vscode-docker"
+  ]
+}

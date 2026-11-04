@@ -1,0 +1,99 @@
+@use 'tokens';
+@use 'mixins';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--wp-bg);
+  color: var(--wp-text);
+  font-family: var(--wp-font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--wp-primary);
+}
+
+:focus-visible {
+  @include mixins.focus-ring;
+}
+
+.wp-mono {
+  font-family: var(--wp-font-mono);
+  font-size: 12.5px;
+}
+
+.wp-tabular {
+  @include mixins.tabular-nums;
+}
+
+.wp-truncate {
+  @include mixins.truncate;
+}
+
+.wp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// Diagonal watermark shown over the content area for public demo guests.
+.wp-demo-watermark {
+  position: relative;
+
+  &::after {
+    content: 'DEMO DATA · SIMULATED ORGANISATION';
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-24deg);
+    font-size: clamp(32px, 7vw, 96px);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--wp-text);
+    opacity: 0.045;
+    pointer-events: none;
+    z-index: 1;
+    white-space: nowrap;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--wp-border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

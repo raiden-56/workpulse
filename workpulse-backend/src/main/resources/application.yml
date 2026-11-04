@@ -1,0 +1,124 @@
+spring:
+  application:
+    name: workpulse-backend
+  datasource:
+    # 55432 is the host port published by infra/docker-compose.yml (keeps clear of a local PostgreSQL on 5432)
+    url: ${WORKPULSE_DB_URL:jdbc:postgresql://localhost:55432/workpulse}
+    username: ${WORKPULSE_DB_USERNAME:workpulse}
+    password: ${WORKPULSE_DB_PASSWORD:workpulse_dev_password}
+    hikari:
+      maximum-pool-size: ${WORKPULSE_DB_POOL_SIZE:10}
+      minimum-idle: 2
+      pool-name: workpulse-pool
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 50
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+  data:
+    redis:
+      host: ${WORKPULSE_REDIS_HOST:localhost}
+      port: ${WORKPULSE_REDIS_PORT:6379}
+      password: ${WORKPULSE_REDIS_PASSWORD:workpulse_dev_redis}
+      timeout: 2s
+  rabbitmq:
+    host: ${WORKPULSE_RABBITMQ_HOST:localhost}
+    port: ${WORKPULSE_RABBITMQ_PORT:5672}
+    username: ${WORKPULSE_RABBITMQ_USERNAME:workpulse}
+    password: ${WORKPULSE_RABBITMQ_PASSWORD:workpulse_dev_rabbit}
+    connection-timeout: 3s
+    publisher-confirm-type: correlated
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+  threads:
+    virtual:
+      enabled: false
+
+server:
+  port: ${WORKPULSE_PORT:8080}
+  forward-headers-strategy: framework
+  compression:
+    enabled: true
+  error:
+    include-message: never
+    include-stacktrace: never
+    whitelabel:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    rabbit:
+      enabled: true
+    redis:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  default-produces-media-type: application/json
+
+workpulse:
+  jwt:
+    secret: ${WORKPULSE_JWT_SECRET:change-me-in-production-this-must-be-at-least-32-bytes-long}
+    issuer: workpulse
+    access-token-ttl: ${WORKPULSE_JWT_ACCESS_TTL:15m}
+    refresh-token-ttl: ${WORKPULSE_JWT_REFRESH_TTL:7d}
+    guest-token-ttl: ${WORKPULSE_JWT_GUEST_TTL:2h}
+  cors:
+    allowed-origins: ${WORKPULSE_CORS_ORIGINS:http://localhost:5173,http://localhost:8080}
+  demo:
+    enabled: ${WORKPULSE_DEMO_ENABLED:true}
+    organization-slug: demo
+    seed-days: 14
+    employee-count: 48
+  bootstrap:
+    admin-email: ${WORKPULSE_BOOTSTRAP_ADMIN_EMAIL:admin@workpulse.local}
+    admin-password: ${WORKPULSE_BOOTSTRAP_ADMIN_PASSWORD:ChangeMe!2026}
+    organization-name: ${WORKPULSE_BOOTSTRAP_ORG_NAME:WorkPulse Platform}
+  agent:
+    auto-approve-devices: ${WORKPULSE_AGENT_AUTO_APPROVE:true}
+    max-batch-events: 500
+    offline-after: 2m
+  rate-limit:
+    enabled: ${WORKPULSE_RATE_LIMIT_ENABLED:true}
+    login-per-minute: 10
+    guest-per-minute: 5
+    activity-batch-per-minute: 120
+
+logging:
+  level:
+    root: INFO
+    com.workpulse: ${WORKPULSE_LOG_LEVEL:INFO}
+    org.hibernate.SQL: WARN
+    org.springframework.security: WARN

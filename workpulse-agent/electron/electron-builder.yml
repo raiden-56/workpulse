@@ -1,0 +1,38 @@
+appId: com.workpulse.agent
+productName: WorkPulse Agent
+copyright: Copyright © 2026 WorkPulse
+directories:
+  output: release
+  buildResources: assets
+files:
+  - dist/**
+  - dist-electron/**
+  - package.json
+  - "!**/*.map"
+asar: true
+publish: null
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: assets/icon.png
+  artifactName: WorkPulseAgent-UI-${version}-${arch}.${ext}
+  requestedExecutionLevel: asInvoker
+  # Code signing (required for production): set WIN_CSC_LINK / WIN_CSC_KEY_PASSWORD in CI, or use
+  # a certificate from the machine store via certificateSubjectName. See installer/SIGNING.md.
+  # certificateSubjectName: "WorkPulse Ltd"
+  # signingHashAlgorithms: [sha256]
+  # rfc3161TimeStampServer: http://timestamp.digicert.com
+
+nsis:
+  oneClick: false
+  perMachine: true
+  allowToChangeInstallationDirectory: false
+  allowElevation: true
+  createDesktopShortcut: false
+  createStartMenuShortcut: true
+  shortcutName: WorkPulse Agent
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  artifactName: WorkPulseAgent-UI-Setup-${version}.${ext}

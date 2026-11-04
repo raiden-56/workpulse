@@ -1,0 +1,45 @@
+// WorkPulse design tokens (docs/architecture/DESIGN_SYSTEM.md).
+// Light values on :root, dark values when MUI sets the `dark` class on <html>.
+:root {
+  --wp-bg: #f6f6f2;
+  --wp-surface: #ffffff;
+  --wp-surface-muted: #eff0eb;
+  --wp-text: #252a27;
+  --wp-text-muted: #747c75;
+  --wp-border: #e4e7e1;
+  --wp-primary: #547b62;
+  --wp-primary-hover: #476a54;
+  --wp-primary-soft: #e6eee8;
+  --wp-positive: #4e8866;
+  --wp-warning: #c18b43;
+  --wp-critical: #b75e56;
+  --wp-info: #5b7a8c;
+  --wp-nav: #252b27;
+  --wp-nav-text: #d9ded8;
+  --wp-nav-active: #33403a;
+  --wp-shadow-popover: 0 8px 24px rgba(37, 42, 39, 0.12);
+  --wp-radius-control: 6px;
+  --wp-radius-card: 10px;
+  --wp-radius-dialog: 14px;
+  --wp-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --wp-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --wp-sidebar-width: 240px;
+  --wp-sidebar-collapsed: 72px;
+  --wp-topbar-height: 60px;
+}
+
+html.dark {
+  --wp-bg: #1a1d1b;
+  --wp-surface: #232724;
+  --wp-surface-muted: #2b302c;
+  --wp-text: #eceeea;
+  --wp-text-muted: #9aa39c;
+  --wp-border: #343a35;
+  --wp-primary: #7aa98a;
+  --wp-primary-hover: #8fbb9e;
+  --wp-primary-soft: #2d3a31;
+  --wp-nav: #141715;
+  --wp-nav-text: #c9cfca;
+  --wp-nav-active: #233029;
+  --wp-shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.45);
+}

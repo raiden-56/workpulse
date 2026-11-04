@@ -1,0 +1,41 @@
+{
+  "name": "workpulse-agent-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WorkPulse desktop agent – visible, employee-facing monitoring status and settings UI",
+  "author": "WorkPulse",
+  "license": "UNLICENSED",
+  "main": "dist-electron/electron/src/main/main.js",
+  "scripts": {
+    "dev": "concurrently -k -n vite,electron -c cyan,green \"vite\" \"npm run build:main && electron .\"",
+    "dev:mock": "concurrently -k -n vite,electron -c cyan,green \"vite\" \"npm run build:main && electron . --mock\"",
+    "start": "electron .",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "vite build",
+    "build": "npm run build:main && npm run build:renderer",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "test": "vitest",
+    "dist": "npm run build && electron-builder --win --config electron-builder.yml"
+  },
+  "dependencies": {
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
+    "@mui/icons-material": "7.3.11",
+    "@mui/material": "7.3.11",
+    "electron-log": "^5.4.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "concurrently": "^9.2.0",
+    "electron": "38.8.6",
+    "electron-builder": "26.18.1",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vitest": "3.2.7"
+  }
+}

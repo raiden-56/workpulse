@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://workpulse.example/schemas/agent-ipc-v1.json",
+  "title": "WorkPulse Agent IPC message (protocol v1)",
+  "type": "object",
+  "required": ["kind", "id", "ts", "body"],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["hello", "hello.ack", "event", "policy", "status.get", "status", "register", "register.result",
+               "break.start", "break.end", "sync.now", "sync.result", "diagnostics.get", "diagnostics",
+               "notification", "ack", "error"]
+    },
+    "id": { "type": "string", "format": "uuid" },
+    "ts": { "type": "string", "format": "date-time" },
+    "replyTo": { "type": ["string", "null"], "format": "uuid" },
+    "body": { "type": "object" }
+  },
+  "allOf": [
+    { "if": { "properties": { "kind": { "const": "hello" } } },
+      "then": { "properties": { "body": { "$ref": "#/$defs/hello" } } } },
+    { "if": { "properties": { "kind": { "const": "event" } } },
+      "then": { "properties": { "body": { "$ref": "#/$defs/activityEvent" } } } },
+    { "if": { "properties": { "kind": { "const": "register" } } },
+      "then": { "properties": { "body": { "$ref": "#/$defs/register" } } } },
+    { "if": { "properties": { "kind": { "const": "register.result" } } },
+      "then": { "properties": { "body": { "$ref": "#/$defs/registerResult" } } } },
+    { "if": { "properties": { "kind": { "const": "status" } } },
+      "then": { "properties": { "body": { "$ref": "#/$defs/agentStatus" } } } },
+    { "if": { "properties": { "kind": { "const": "notification" } } },
+      "then": { "properties": { "body": { "$ref": "#/$defs/notification" } } } },
+    { "if": { "properties": { "kind": { "enum": ["break.start", "break.end"] } } },
+      "then": { "properties": { "body": { "type": "object", "properties": { "note": { "type": "string", "maxLength": 255 } } } } } },
+    { "if": { "properties": { "kind": { "const": "ack" } } },
+      "then": { "properties": { "body": { "type": "object", "required": ["ok"], "properties": { "ok": { "type": "boolean" }, "error": { "type": "string" } } } } } },
+    { "if": { "properties": { "kind": { "const": "error" } } },
+      "then": { "properties": { "body": { "type": "object", "required": ["code", "message"], "properties": { "code": { "type": "string" }, "message": { "type": "string" } } } } } }
+  ],
+  "$defs": {
+    "hello": {
+      "type": "object",
+      "required": ["component", "version"],
+      "properties": {
+        "component": { "enum": ["collector", "ui"] },
+        "version": { "type": "string" },
+        "sessionId": { "type": "string", "format": "uuid" },
+        "windowsUser": { "type": "string" }
+      }
+    },
+    "activityEvent": {
+      "type": "object",
+      "required": ["eventId", "type", "occurredAt", "payload"],
+      "properties": {
+        "eventId": { "type": "string", "format": "uuid" },
+        "sequence": { "type": ["integer", "null"] },
+        "type": {
+          "enum": ["AGENT_STARTED", "AGENT_STOPPED", "AGENT_HEARTBEAT", "SESSION_START", "SESSION_END", "SESSION_LOCK",
+                   "SESSION_UNLOCK", "FOREGROUND_APP", "IDLE_START", "IDLE_END", "INPUT_SUMMARY", "BREAK_START", "BREAK_END",
+                   "NETWORK_OFFLINE", "NETWORK_ONLINE", "POLICY_APPLIED", "DEVICE_INFO"]
+        },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "sessionId": { "type": ["string", "null"], "format": "uuid" },
+        "payload": {
+          "type": "object",
+          "description": "Type-specific. The following keys are forbidden and rejected by the backend: keys, keystrokes, keycodes, text, clipboard, screenshot, image, password, url, message, messages, fileContent, windowTitle.",
+          "propertyNames": {
+            "not": { "enum": ["keys", "keystrokes", "keycodes", "text", "clipboard", "screenshot", "image", "password", "url", "message", "messages", "fileContent", "windowTitle"] }
+          }
+        }
+      }
+    },
+    "register": {
+      "type": "object",
+      "required": ["accessToken", "apiBaseUrl"],
+      "properties": { "accessToken": { "type": "string" }, "apiBaseUrl": { "type": "string", "format": "uri" } }
+    },
+    "registerResult": {
+      "type": "object",
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "deviceId": { "type": "string" },
+        "status": { "enum": ["PENDING", "APPROVED", "REVOKED", "RETIRED"] },
+        "employeeName": { "type": "string" },
+        "error": { "type": "string" }
+      }
+    },
+    "agentStatus": {
+      "type": "object",
+      "required": ["registered", "connection", "monitoring", "queueDepth", "version"],
+      "properties": {
+        "registered": { "type": "boolean" },
+        "deviceId": { "type": ["string", "null"] },
+        "organizationId": { "type": ["string", "null"] },
+        "employee": { "type": ["object", "null"], "properties": { "id": { "type": "string" }, "name": { "type": "string" } } },
+        "connection": { "enum": ["ONLINE", "OFFLINE", "REVOKED", "UNKNOWN"] },
+        "backendReachable": { "type": "boolean" },
+        "queueDepth": { "type": "integer", "minimum": 0 },
+        "deadLetterCount": { "type": "integer", "minimum": 0 },
+        "lastSyncAt": { "type": ["string", "null"] },
+        "lastSyncError": { "type": ["string", "null"] },
+        "policyVersion": { "type": ["integer", "null"] },
+        "policyName": { "type": ["string", "null"] },
+        "policy": { "type": ["object", "null"] },
+        "monitoring": { "enum": ["ACTIVE", "PAUSED_OUTSIDE_WINDOW", "STOPPED", "REVOKED", "PENDING_APPROVAL", "NOT_REGISTERED"] },
+        "currentApp": { "type": ["object", "null"] },
+        "sessionStartedAt": { "type": ["string", "null"] },
+        "collectorConnected": { "type": "boolean" },
+        "onBreak": { "type": "boolean" },
+        "todayUsage": { "type": "array" },
+        "todaySummary": { "type": "object" },
+        "version": { "type": "string" },
+        "serviceVersion": { "type": "string" },
+        "apiBaseUrl": { "type": "string" },
+        "mock": { "type": "boolean" }
+      }
+    },
+    "notification": {
+      "type": "object",
+      "required": ["level", "title", "message"],
+      "properties": { "level": { "enum": ["info", "warning", "error"] }, "title": { "type": "string" }, "message": { "type": "string" } }
+    }
+  }
+}
